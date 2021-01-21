@@ -1,26 +1,25 @@
 --[[
 Normalize Import
 
-A simple plugin to normalize directory path (film) of imported images.
+A simple plugin to normalize directory path of imported images.
 When a new image is imported, the plugin immediately moves the new image to the
 following normalized directory path:
-<photos_path>/YYYY/MM/DD/<image.jpg>
+<photos_path>/YYYY/mm/dd/HHMMSS<.ext>
 
 AUTHOR
 Bruno Binet <binet.bruno@gmail.com>
 
 INSTALLATION
 * install lua lfs dependency: sudo apt install lua-filesystem
-* copy this file in $CONFIGDIR/lua/ where CONFIGDIR is your darktable
+* copy this file in `$CONFIGDIR/lua/` where `$CONFIGDIR` is your darktable
 configuration directory
-* add the following line in the file $CONFIGDIR/luarc require
-"normalize-import"
+* add the following line in the file `$CONFIGDIR/luarc`: `require "normalize-import"`
 
 USAGE
-* set the <photos_path> directory for storing normalized imported photos in
+* set the `<photos_path>` directory for storing normalized imported photos in
 preferences => lua => Photos path
 * import your images as you usually do
-* they are automatically moved to the <photos_path> directory
+* they are automatically moved to the `<photos_path>` directory
 
 LICENSE
 MIT
