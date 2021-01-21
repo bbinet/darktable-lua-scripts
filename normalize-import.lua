@@ -80,10 +80,12 @@ local function move_image(event, image)
     until lfs.attributes(new_path) == nil
 
     image.move(new_film, image, new_name)
-    print(">>> move_image: " .. old_path .. ' ==> ' .. tostring(image))
+    local new_path = tostring(image)
+    print(">>> move_image: " .. old_path .. ' ==> ' .. new_path)
+    os.execute('chmod 644 "' .. new_path .. '" "' .. new_path .. '.xmp"')
 
     if (lfs.attributes(new_path) == nil) then
-        print(">>> move_image has failed: image.delete(" .. tostring(image) ..")")
+        print(">>> move_image has failed: image.delete(" .. new_path ..")")
         image.delete(image)
     end
 
