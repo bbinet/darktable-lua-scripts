@@ -13,7 +13,6 @@ following normalized path:
 
 ### Installation
 
-* install lua lfs dependency: `sudo apt install lua-filesystem`
 * copy the `normalize-import.lua` file in `$CONFIGDIR/lua/` where `$CONFIGDIR`
   is your darktable configuration directory
 * add the following line in the file `$CONFIGDIR/luarc`: `require "normalize-import"`

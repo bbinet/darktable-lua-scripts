@@ -10,7 +10,6 @@ AUTHOR
 Bruno Binet <binet.bruno@gmail.com>
 
 INSTALLATION
-* install lua lfs dependency: sudo apt install lua-filesystem
 * copy this file in `$CONFIGDIR/lua/` where `$CONFIGDIR` is your darktable
 configuration directory
 * add the following line in the file `$CONFIGDIR/luarc`: `require "normalize-import"`
@@ -27,34 +26,8 @@ MIT
 ]]
 
 local dt = require "darktable"
-local lfs = require "lfs"
 
 print ("****** Lua - script load: normalize-import.lua *****")
-
-
-function pathchunks(name)
-    local chunks = {}
-    for w in string.gmatch(name, "[^/\\]+") do
-       table.insert(chunks, 1, w)
-    end
-    return chunks
-end
-
-function mkdir_p(path)
-    local chunks = pathchunks(path)
-    local originalpath = lfs.currentdir()
-    lfs.chdir("/")
-    for i=#chunks, 1, -1 do
-        local c = chunks[i]
-        local exists = lfs.attributes(c) ~= nil
-        if(not exists) then
-            lfs.mkdir(c)
-        end
-        lfs.chdir(c)
-    end
-    lfs.chdir(originalpath)
-    return path
-end
 
 
 local function move_image(event, image)
@@ -64,7 +37,7 @@ local function move_image(event, image)
     local old_path = tostring(image)
     local ext = string.match(image.filename, "^.+(%..+)$")
     local dir_path = table.concat({photos_path, Y, m, d,}, '/')
-    mkdir_p(dir_path)
+    os.execute('mkdir -p "' .. dir_path .. '"')
     local new_film = dt.films.new(dir_path)
     --local old_film = image.film
     local new_name, new_path, idx = nil, nil, 0
@@ -77,14 +50,14 @@ local function move_image(event, image)
         new_path = table.concat({dir_path, new_name}, '/')
         idx = idx + 1
         --print(">>> new_path=" .. new_path)
-    until lfs.attributes(new_path) == nil
+    until os.execute('test -e "' .. new_path .. '"') == nil
 
     image.move(new_film, image, new_name)
     local new_path = tostring(image)
     print(">>> move_image: " .. old_path .. ' ==> ' .. new_path)
     os.execute('chmod 644 "' .. new_path .. '" "' .. new_path .. '.xmp"')
 
-    if (lfs.attributes(new_path) == nil) then
+    if (os.execute('test -e "' .. new_path .. '"') == nil) then
         print(">>> move_image has failed: image.delete(" .. new_path ..")")
         image.delete(image)
     end
