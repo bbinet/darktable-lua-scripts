@@ -35,7 +35,8 @@ local function move_image(event, image)
     local Y, m, d, H, M, S = string.match(
       image.exif_datetime_taken, "(%d+):(%d+):(%d+) (%d+):(%d+):(%d+)")
     local old_path = tostring(image)
-    local ext = string.match(image.filename, "^.+(%..+)$")
+    local ext = string.match(image.filename, "^.+(%..+)$"):lower()
+    if ext == ".jpeg" then ext = ".jpg" end
     local dir_path = table.concat({photos_path, Y, m, d,}, '/')
     os.execute('mkdir -p "' .. dir_path .. '"')
     local new_film = dt.films.new(dir_path)
