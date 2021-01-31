@@ -1,8 +1,14 @@
 #!/bin/bash
 
-PHOTO_DIR=${1:-/home/data/photos}
-NON_PHOTO_DIR=${2:-/home/data/non-photos}
+NOT_SORTED_DIR=${1%/}
+SORTED_DIR=${2:-/home/data/A_IMPORTER}
+SORTED_DIR=${SORTED_DIR%/}
 
+if [ -z "$NOT_SORTED_DIR" ]
+then
+    echo "Please specify directory to process as first argument"
+    exit 1
+fi
 
 if [ ! -e "mime.json" ]
 then
@@ -24,7 +30,10 @@ then
 " | sudo tee -a /etc/magic
 fi
 
-echo "Finding non-photos files, rename and move them to non-photos dir"
+# ensure all files are owned by clemence
+sudo chown -R clemence: "${SORTED_DIR}"
+
+echo "Finding files, rename, sort and move them to directory: $SORTED_DIR/"
 while IFS= read -r line
 do
     ## take some action on ${line}
@@ -32,15 +41,15 @@ do
     echo "${line}"
     abspath=$(echo "${line}"| awk -F ': ' '{print $1}')
     mime=$(echo "${line}"| awk -F ': ' '{print $2}')
-    relpath=${abspath#"${PHOTO_DIR}/"}
+    relpath=${abspath#"${NOT_SORTED_DIR}/"}
     fname=$(basename ${relpath})
     fdir=$(dirname ${relpath})
     ftype=$(echo "${mime}"| awk -F '/' '{print $1}')
     ext=$(jq -r ".\"${mime}\".extensions[0]" mime.json)
-    dstdir="${NON_PHOTO_DIR}/${ftype}/${fdir}"
+    dstdir="${SORTED_DIR}/${ftype}/${fdir}"
     dstpath="${dstdir}/${fname%.*}.${ext}"
     mkdir -p "${dstdir}"
     mv "${abspath}" "${dstpath}"
     mv "${abspath}.xmp" "${dstpath}.xmp"
     echo "Moved ${abspath} => ${dstpath}"
-done < <(find "${PHOTO_DIR}" -type f -not -name "*.xmp" -exec file -N --mime-type -- {} + | grep -v image)
+done < <(find "${NOT_SORTED_DIR}" -type f -not -name "*.xmp" -exec file -N --mime-type -- {} +)
