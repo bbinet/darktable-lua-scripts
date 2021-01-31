@@ -50,7 +50,6 @@ local function move_image(event, image)
         end
         new_path = table.concat({dir_path, new_name}, '/')
         idx = idx + 1
-        --print(">>> new_path=" .. new_path)
     until os.execute('test -e "' .. new_path .. '"') == nil
 
     image.move(new_film, image, new_name)
@@ -62,11 +61,6 @@ local function move_image(event, image)
         print(">>> move_image has failed: image.delete(" .. new_path ..")")
         image.delete(image)
     end
-
-    -- old_film.delete(old_film)
-    -- ^ do not delete old_film or the import will fail for the next images of
-    -- the same old_film
-    -- We may consider purging empty films on post-import-film event ?
 end
 
 dt.preferences.register("normalize-import", "photos_path",
