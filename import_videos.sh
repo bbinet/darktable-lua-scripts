@@ -11,8 +11,18 @@ fi
 
 if ! grep -q "video/mp2t" /etc/magic
 then
-    echo "Add video/mp2t mimetype detection to /etc/magic"
+    echo "Add video/mpeg and video/mp2t mimetype detection to /etc/magic"
     echo "
+0	 belong		    0x00000001
+>4	 byte&0x1F	    0x07	   JVT NAL sequence, H.264 video
+>>5      byte               66             \b, baseline
+>>5      byte               77             \b, main
+>>5      byte               88             \b, extended
+>>7      byte               x              \b @ L %u
+0        belong&0xFFFFFF00  0x00000100
+>3       byte               0xBA           MPEG sequence
+!:mime  video/mpeg
+
 4 byte 0x47
 >5 beshort 0x4000
 >>7 byte ^0xF
@@ -36,6 +46,10 @@ do
         echo "Skip file: $srcpath does not exist"
         continue
     fi
+    # Remove leading and trailing double quotes from tags if any
+    tags="${tags%\"}"
+    tags="${tags#\"}"
+    echo "Importing file: $srcpath, date: $dt, tags: $tags"
     mime=$(file -N --mime-type -- "$srcpath" | awk -F ': ' '{print $2}')
     ext=$(jq -r ".\"${mime}\".extensions[0]" mime.json)
     exiftool -q -m "-FileModifyDate=$dt" $srcpath
@@ -43,15 +57,17 @@ do
     subdirs=$(dirname $dtpath)
     bname=$(basename $dtpath)
     dstdir="${VIDEOS_DIR}/${subdirs}"
-    dstpath="${dstdir}/${bname}.${ext}"
+    dstfn="${bname}.${ext}"
+    dstpath="${dstdir}/${dstfn}"
     i=0
     while [ -f "${dstpath}" ]
     do
 	i=$((i+1))
-        dstpath="${dstdir}/${bname}_${i}.${ext}"
+        dstfn="${bname}_${i}.${ext}"
+        dstpath="${dstdir}/${dstfn}"
     done
     echo "Moving \"${srcpath}\" => \"${dstpath}\""
     mkdir -p "$dstdir"
-    echo "{\"datetime\": \"$dtpath\", \"tags\": \"$tags\"}" > "${dstpath}.json"
+    jq -S . <<< "{\"path\": \"$dstfn\", \"datetime\": \"$dtpath\", \"tags\": \"$tags\"}" > "${dstpath}.json"
     mv "${srcpath}" "${dstpath}"
 done < videos.csv
