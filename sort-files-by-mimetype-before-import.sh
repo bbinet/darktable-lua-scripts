@@ -1,6 +1,7 @@
 #!/bin/bash
 
-NOT_SORTED_DIR=${1%/}
+NOT_SORTED_DIR=${1:-/home/data/NOT_SORTED}
+NOT_SORTED_DIR=${NOT_SORTED_DIR%/}
 SORTED_DIR=${2:-/home/data/A_IMPORTER}
 SORTED_DIR=${SORTED_DIR%/}
 
@@ -18,8 +19,18 @@ fi
 
 if ! grep -q "video/mp2t" /etc/magic
 then
-    echo "Add video/mp2t mimetype detection to /etc/magic"
+    echo "Add video/mpeg and video/mp2t mimetype detection to /etc/magic"
     echo "
+0	 belong		    0x00000001
+>4	 byte&0x1F	    0x07	   JVT NAL sequence, H.264 video
+>>5      byte               66             \b, baseline
+>>5      byte               77             \b, main
+>>5      byte               88             \b, extended
+>>7      byte               x              \b @ L %u
+0        belong&0xFFFFFF00  0x00000100
+>3       byte               0xBA           MPEG sequence
+!:mime  video/mpeg
+
 4 byte 0x47
 >5 beshort 0x4000
 >>7 byte ^0xF
