@@ -29,6 +29,7 @@ then
 	    else
 		echo "rm -f \"$line\""
 		rm -f "$line"
+		rm -f "${line}.json" # also try to delete video json side files
 	    fi
 	fi
     done < "${DUPLICATES_TXT}"
